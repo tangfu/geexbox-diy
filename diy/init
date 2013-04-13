@@ -7,6 +7,7 @@ dbg_echo () {
 }
 
 prase_from() {
+#################检测From参数##########################
 	[ -z "$FROM" ] && return
 	FROM_TYPE=${FROM%%:*}
 	FROM=${FROM#*:}
@@ -73,6 +74,33 @@ prase_from() {
 		return
 	fi
 
+#############检测PERSISTENT参数#########################################    
+	[ -z "$PERSISTENT" ] && return
+    PERSISTENT_DEV=${PERSISTENT%%:*}
+    PERSISTENT_FILE=${PERSISTENT##*:}
+    [ "$PERSISTENT" = "casper-rw" ] && return
+    [ "$PERSISTENT" = "/casper-rw" ] && return
+
+    if [ ! -b "${PERSISTENT_DEV}" ];then
+        anytmp_uuid=`findfs UUID=${FROM_DEV}`
+        if [ ! $? = 0 ];then
+            anytmp_label=`findfs LABEL=${FROM_DEV}`
+            if [ ! $? = 0 ];then
+                dbg_echo "[detect persistent] ${FROM_PERSISTENT}  failed"
+            else
+                dbg_echo "[detect persistent] ${FROM_PERSISTENT} - ${anytmp_label} succ"
+                PERSISTENT_DEV=${anytmp_label}
+                return
+            fi
+        else
+            dbg_echo "[detect persistent] ${FROM_PERSISTENT} - ${anytmp_uuid} succ"
+            PERSISTENT_DEV=${anytmp_uuid}
+            return
+        fi
+    else
+        dbg_echo "[detect persistent] ${FROM_PERSISTENT} - ${anytmp_dev} succ"
+        return
+    fi
 	exec sh
 }
 
@@ -322,14 +350,14 @@ if [ -n "$FROM_FLAG" ]; then
 				    umount /mnt
 					umount /.partition
 			    fi
-			    if [ -n "$PERSISTENT" ]; then
-				PERSISTENT_DEV=${PERSISTENT%%:*}
-				PERSISTENT_FILE=${PERSISTENT##*:}
-				if ! mount_dev "$PERSISTENT_DEV" /.partition $ROOT_MODE_PART; then
-				    dbg_echo "PERSISTENT(DEV=$PERSISTENT_DEV,FILE=$PERSISTENT_FILE) mount failed"
-				    exec sh;
-				fi
-			    fi	
+                if [ -n "$PERSISTENT" ]; then
+                    # PERSISTENT_DEV=${PERSISTENT%%:*}
+                    # PERSISTENT_FILE=${PERSISTENT##*:}
+                    if ! mount_dev "$PERSISTENT_DEV" /.partition $ROOT_MODE_PART; then
+                        dbg_echo "PERSISTENT(DEV=$PERSISTENT_DEV,FILE=$PERSISTENT_FILE) mount failed"
+                        exec sh;
+                    fi
+                fi	
 			else
 				echo -e "\033[31;1mmount FROM_BASIC=$FROM_BASIC failed\033[0m"
 				dbg_echo "mount FROM_BASIC=$FROM_BASIC failed"
