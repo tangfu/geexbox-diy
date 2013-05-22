@@ -88,7 +88,7 @@ cp ../../diy/busybox bin/busybox
 
 #重新打包
 echo -e "start package..."
-find . | cpio -o -H newc 2>/dev/null | xz -9 --check=crc32 > ../initrd 2>/dev/null 1>&2
+find . | cpio -o -H newc 2>/dev/null | xz -9 --check=crc32 > ../initrd 2>/dev/null
 cd ..
 mkisofs -J -R -T -v -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -m "*~" -m "*bak" -m "*.swp" -m temp -o ../${newfile} . 2>/dev/null 1>&2
 
