@@ -7,7 +7,7 @@ geexbox-diy
 由于中途用到了mount等指令，因此脚本需要root权限
 
 [细节]
-详见http://www.rainhome.org/geexbox3-0-直接从iso启动
+详见http://www.rainhome.org/geexbox从iso文件启动的自动化改造/
 
 
 =======
